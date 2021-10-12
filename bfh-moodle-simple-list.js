@@ -25,6 +25,7 @@
 
   const mediaBodies = document.getElementsByClassName("media-body");
   const sessKey = document.head.textContent.match(/sesskey":"(.*?)"/)?.[1];
+  if (!sessKey) return;
   const path = `https://moodle.bfh.ch/lib/ajax/service.php?sesskey=${sessKey}&info=core_course_get_enrolled_courses_by_timeline_classification`;
 
   let courses = JSON.parse(sessionStorage.getItem(STORAGE_KEY));
@@ -33,10 +34,12 @@
       method: "POST",
       body: JSON.stringify(REQUEST_CONFIG),
     });
-    if (!response.ok)
-      return console.error("BFH - Simple Moodle List: Couldn't fetch courses");
+    if (!response.ok) return;
 
-    courses = (await response.json())[0].data.courses;
+    const json = (await response.json())?.[0];
+    if (json.error) return;
+
+    courses = json.data.courses;
     sessionStorage.setItem(STORAGE_KEY, JSON.stringify(courses));
   }
 
